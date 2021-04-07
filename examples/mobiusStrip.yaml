@@ -1,0 +1,13 @@
+# Create a network with the topology of a mobius using alpine containers.
+name: "mobius"
+image: "alpine"
+networks:
+ - containers: [0, 1, 2]
+ - containers: [1, 2, 3]
+ - containers: [2, 3, 4]
+ - containers: [3, 4, 5]
+ - containers: [0, 4, 5]
+ - containers: [0, 1, 5]
+containers:
+ - containers: [0]
+   bridge: true

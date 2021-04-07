@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
@@ -73,7 +74,8 @@ func main() {
 	}
 
 	// Range over the principle simplices, create a network, attach it to the simplex and attach vertices to the network.
-	for _, smplx := range c.PrincipleSimplices().Slice() {
+	principleSimplices := c.PrincipleSimplices().Slice()
+	for _, smplx := range principleSimplices {
 		// Skip containers
 		if smplx.Dim() == 0 {
 			continue
@@ -90,7 +92,7 @@ func main() {
 		}
 		for _, network := range conf.NetworkConfs {
 			if network.appliesToBase(base) {
-				nc.Internal = network.Internal
+				nc.Internal = !network.External
 				break
 			}
 		}
@@ -113,7 +115,8 @@ func main() {
 	}
 
 	// Range over the containers, disconnect the bridge network if needed, and start the container
-	for _, smplx := range c.ChainGroup(0).Simplices() {
+	containers := c.ChainGroup(0).Simplices()
+	for _, smplx := range containers {
 		cid := smplx.Data.(string)
 
 		if !conf.bridging[int(smplx.Index())] {
@@ -124,6 +127,38 @@ func main() {
 
 		if err := cli.ContainerStart(ctx, cid, types.ContainerStartOptions{}); err != nil {
 			panic(err)
+		}
+	}
+
+	fmt.Printf("created %d networks\n", len(principleSimplices))
+	fmt.Printf("started %d containers\n", len(containers))
+
+	bn := c.BettiNumbers()
+	fmt.Printf("\ncomponents: %d\n", bn[0])
+	if len(bn) > 1 {
+		fmt.Println("hole count:")
+		for dim, bbn := range bn[1:] {
+			fmt.Printf("\t%d-dimensional: %d\n", dim+1, bbn)
+		}
+		fmt.Println("")
+	}
+
+	basis := c.ChainGroup(1).HomologyGroup().MinimalBasis()
+	if basis != nil {
+		fmt.Println("minimal paths around 1-dimensional holes:")
+		for _, bbasis := range basis {
+			visited := map[comptop.Index]struct{}{}
+			vs := []string{}
+			for _, smplx := range bbasis.Simplices() {
+				if _, printed := visited[smplx.Base()[0]]; printed {
+					vs = append(vs, fmt.Sprintf("%d", smplx.Base()[1]))
+				} else {
+					vs = append(vs, fmt.Sprintf("%d", smplx.Base()[0]))
+					visited[smplx.Base()[0]] = struct{}{}
+				}
+			}
+			vs = append(vs, vs[0])
+			fmt.Printf("\t%s\n", strings.Join(vs, "->"))
 		}
 	}
 }

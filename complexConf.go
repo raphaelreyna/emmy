@@ -3,25 +3,21 @@
 ***** SAMPLE YAML CONF FILE ******
 **********************************
 
-name: torus
+name: example
 image: alpine
 networks:
   - containers: [0, 1, 2]
-    internal: true
     label: big
+    image: alpine
   - containers: [2, 3]
-    internal: true
+    external: true
     enableIPV6: false
     label: small
-    image: alpine
 containers:
   - image: busybox
     containers: [0, 1]
-  - image: alpine
-    containers: [2, 3]
   - bridge: true
     cmd: ["ash"]
-    image: alpine
     containers:
       - 1
 */
@@ -39,7 +35,7 @@ import (
 
 type NetworkConf struct {
 	Containers []int  `yaml:"containers"`
-	Internal   bool   `yaml:"internal"`
+	External   bool   `yaml:"external"`
 	EnableIPV6 bool   `yaml:"enableIPV6"`
 	Driver     string `yaml:"driver"`
 	Label      string `yaml:"label"`
