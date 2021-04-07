@@ -11,10 +11,8 @@ name: "example"
 image: "alpine"
 networks:
   - containers: [0, 1, 2]
-    internal: true
     label: "big"
   - containers: [2, 3]
-    internal: true
     image: "ubuntu"
   - containers: [1, 3]
 containers:
@@ -25,4 +23,20 @@ containers:
       - 1
 ```
 
-Pass in the `-teardown` flag to teardown the topology described in the passed in YAML file.
+## Usage
+```
+Usage: 7b [-teardown] file
+```
+
+## Options
+ - `networks.containers`
+ - `networks.label`
+ - `networks.image`
+ - `networks.external`
+ - `networks.driver`
+ - `networks.enableIPV6`
+ - `containers.containers`
+ - `containers.cmd`
+ - `containers.image`
+ - `containers.bridge`
+ - `containers.networks`
