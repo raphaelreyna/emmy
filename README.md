@@ -23,9 +23,25 @@ containers:
       - 1
 ```
 
-## Usage
+## Example usage
+Create a Mobius strip of alpine containers:
+```sh
+$ 7b ./SevenBridges/examples/mobiusStrip.yaml
+created 6 networks
+started 6 containers
+
+components: 1
+hole count:
+	1-dimensional: 1
+	2-dimensional: 0
+
+minimal paths around 1-dimensional holes:
+	0->2->1->0
 ```
-Usage: 7b [-teardown] file
+
+Teardown the mobius strip we just created:
+```sh
+$ 7b -teardown ./SevenBridges/examples/mobiusStrip.yaml
 ```
 
 ## Options
