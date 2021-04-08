@@ -13,7 +13,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
-	github.com/raphaelreyna/go-comptop v0.2.0 // indirect
+	github.com/raphaelreyna/go-comptop v0.2.1 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4 // indirect
 	golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57 // indirect
