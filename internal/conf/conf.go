@@ -21,15 +21,11 @@ containers:
     containers:
       - 1
 */
-package main
+package conf
 
 import (
-	"context"
-	"fmt"
-
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/strslice"
-	"github.com/docker/docker/client"
 	comptop "github.com/raphaelreyna/go-comptop"
 )
 
@@ -41,7 +37,7 @@ type NetworkConf struct {
 	Label      string `yaml:"label"`
 }
 
-func (nc *NetworkConf) appliesToContainer(idx int) bool {
+func (nc *NetworkConf) AppliesToContainer(idx int) bool {
 	for _, i := range nc.Containers {
 		if i == idx {
 			return true
@@ -50,7 +46,7 @@ func (nc *NetworkConf) appliesToContainer(idx int) bool {
 	return false
 }
 
-func (nc *NetworkConf) appliesToBase(b comptop.Base) bool {
+func (nc *NetworkConf) AppliesToBase(b comptop.Base) bool {
 	for _, bb := range b {
 		inNetwork := false
 		for _, cidx := range nc.Containers {
@@ -103,12 +99,12 @@ type ComplexConf struct {
 	NetworkConfs    []*NetworkConf   `yaml:"networks"`
 	ContainersConfs []*ContainerConf `yaml:"containers"`
 
-	bridging map[int]bool
+	Bridging map[int]bool `yaml:"-"`
 }
 
-func (cc *ComplexConf) containerConfig(idx int) *container.Config {
-	if cc.bridging == nil {
-		cc.bridging = map[int]bool{}
+func (cc *ComplexConf) ContainerConfig(idx int) *container.Config {
+	if cc.Bridging == nil {
+		cc.Bridging = map[int]bool{}
 	}
 
 	conf := container.Config{
@@ -120,7 +116,7 @@ func (cc *ComplexConf) containerConfig(idx int) *container.Config {
 	// Look for networks that this container is a part of
 	networks := map[*NetworkConf]struct{}{}
 	for _, nc := range cc.NetworkConfs {
-		if nc.appliesToContainer(idx) {
+		if nc.AppliesToContainer(idx) {
 			networks[nc] = struct{}{}
 			continue
 		}
@@ -157,35 +153,11 @@ func (cc *ComplexConf) containerConfig(idx int) *container.Config {
 				}
 			}
 
-			cc.bridging[idx] = cconf.Bridge
+			cc.Bridging[idx] = cconf.Bridge
 		}
 	}
 
 	return &conf
-}
-
-func (cc *ComplexConf) DataProvider(cli *client.Client) comptop.DataProvider {
-	ctx := context.Background()
-
-	return func(d comptop.Dim, idx comptop.Index, b comptop.Base) interface{} {
-		if d != 0 {
-			return nil
-		}
-
-		resp, err := cli.ContainerCreate(ctx,
-			cc.containerConfig(int(idx)),
-			&container.HostConfig{
-				AutoRemove: true,
-			}, nil, defaultPlatform,
-			fmt.Sprintf("%s_%d", cc.Name, idx),
-		)
-
-		if err != nil {
-			panic(err)
-		}
-
-		return resp.ID
-	}
 }
 
 func (cc *ComplexConf) Bases() []comptop.Base {
