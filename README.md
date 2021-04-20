@@ -56,3 +56,6 @@ Teardown the mobius strip we just created:
 ```sh
 $ emmy teardown ./emmy/examples/mobiusStrip.yaml
 ```
+
+## Why the name emmy?
+https://en.wikipedia.org/wiki/Emmy_Noether
